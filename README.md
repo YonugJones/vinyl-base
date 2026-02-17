@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎵 Vinyl-Base 🎵
 
-## Getting Started
+Vinyl-Base is a modern, UX-first personal vinyl collection manager built with Next.js, TypeScript, PostgreSQL, and Prisma.
 
-First, run the development server:
+Unlike marketplace-driven platforms, Vinyl-Base is designed around the collector — not buying or selling. The focus is on beautifully organizing, browsing, and tracking your personal record collection with speed, clarity, and thoughtful design.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Purpose
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Vinyl-Base solves a simple problem:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> Keep track of what you own, what it cost, how it sounds, and where it lives — in one clean, distraction-free interface.
 
-## Learn More
+This project emphasizes:
 
-To learn more about Next.js, take a look at the following resources:
+- Fast record entry
+- Clean browsing experience (grid and list views)
+- Detailed copy-level tracking (condition, notes, purchase info)
+- Personal insights and collection statistics
+- Dark-first, media-focused design
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech Stack
 
-## Deploy on Vercel
+- Next.js (App Router)
+- TypeScript
+- PostgreSQL
+- Prisma ORM
+- Better Auth
+- Tailwind CSS
+- shadcn/ui
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Data Model
+
+The application separates record metadata from personal ownership details.
+
+### Release
+
+Canonical record metadata:
+
+- Artist
+- Title
+- Year
+- Label
+- Cover art
+- Genre information
+
+### Copy
+
+Your owned version of a release:
+
+- Purchase date
+- Purchase price
+- Media condition
+- Sleeve condition
+- Notes
+- Storage location
+- Favorite status
+
+This structure keeps the app personal-inventory focused while remaining extensible for future enhancements like imports, analytics, and richer metadata.
+
+---
+
+## Core Features (MVP)
+
+- Secure authentication
+- Add and manage records in your collection
+- Track purchase details and condition
+- View collection in grid or list layouts
+- Record detail pages with notes and metadata
+- Dark-first UI optimized for album artwork display
