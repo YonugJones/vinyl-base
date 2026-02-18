@@ -61,8 +61,6 @@ Your owned version of a release:
 - Storage location
 - Favorite status
 
-This structure keeps the app personal-inventory focused while remaining extensible for future enhancements like imports, analytics, and richer metadata.
-
 ---
 
 ## Core Features (MVP)
