@@ -45,7 +45,7 @@ export function ThemeShowcase() {
 
   // Wrap content so you can preview both modes without changing <html class="dark">.
   // Your @custom-variant dark (&:is(.dark *)) makes this work.
-  const modeClass = mode === 'dark' ? 'dark' : ''
+  const modeClass = mode === 'dark' ? 'dark' : 'light'
 
   return (
     <div className={modeClass}>
@@ -144,7 +144,7 @@ export function ThemeShowcase() {
                     . Check readability and contrast.
                   </p>
                   <p className='mt-2 text-sm text-muted-foreground'>
-                    This is muted text. Make sure it’s not too faint.
+                    This is muted text. Make sure it&apos;s not too faint.
                   </p>
                 </div>
 

@@ -5,8 +5,8 @@
 - [x] Initialize Next.js project
 - [x] Install and configure shadcn/ui
 - [x] Configure Tailwind theme (dark-first design)
-- [ ] Setup Prisma
-- [ ] Connect PostgreSQL database
+- [x] Setup Prisma
+- [x] Connect PostgreSQL database
 - [ ] Configure Better Auth
 - [ ] Protect authenticated routes
 
@@ -24,10 +24,10 @@
 
 ### Database Schema
 
-- [ ] Define Release model
-- [ ] Define Copy model
-- [ ] Create migration
-- [ ] Seed database (optional dev data)
+- [x] Define Release model
+- [x] Define Copy model
+- [x] Create migration
+- [ ] Seed database
 
 ---
 

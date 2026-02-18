@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Condition {
+  MINT
+  NEAR_MINT
+  VERY_GOOD_PLUS
+  VERY_GOOD
+  GOOD_PLUS
+  GOOD
+  FAIR
+  POOR
+}
+
+enum Format {
+  LP
+  EP
+  SINGLE
+  BOX_SET
+}
+
+enum Rpm {
+  RPM_33
+  RPM_45
+  RPM_78
+}
+
+model Release {
+  id       String  @id @default(cuid())
+  artist   String
+  title    String
+  year     Int?
+  label    String?
+  coverArt String?
+  format   Format?
+  rpm      Rpm?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  copies Copy[]
+
+  @@index([artist])
+  @@index([title])
+}
+
+model Copy {
+  id String @id @default(cuid())
+
+  releaseId String
+  release   Release @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+
+  purchaseDate       DateTime?
+  purchasePriceCents Int?
+  mediaCondition     Condition?
+  sleeveCondition    Condition?
+  notes              String?    @db.Text
+  isFavorite         Boolean    @default(false)
+  storageLocation    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([releaseId])
+  @@index([isFavorite])
+  @@index([purchaseDate])
+}
