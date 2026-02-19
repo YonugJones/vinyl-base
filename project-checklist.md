@@ -27,7 +27,7 @@
 - [x] Define Release model
 - [x] Define Copy model
 - [x] Create migration
-- [ ] Seed database
+- [x] Seed database
 
 ---
 
