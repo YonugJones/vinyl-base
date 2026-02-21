@@ -80,7 +80,7 @@ model Copy {
 
 model User {
   id            String   @id @default(cuid())
-  name          String
+  name          String?
   email         String   @unique
   emailVerified Boolean  @default(false)
   image         String?
