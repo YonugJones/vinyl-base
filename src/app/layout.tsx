@@ -1,18 +1,6 @@
 import type { Metadata } from 'next'
-// import { Geist, Geist_Mono } from 'next/font/google'
+import { NavBar } from '@/components/nav/NavBar'
 import './globals.css'
-
-/*
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-*/
 
 export const metadata: Metadata = {
   title: 'Vinylbase',
@@ -26,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body className='dark'>{children}</body>
+      <body className='dark bg-background text-foreground'>
+        <NavBar />
+        <main className='mx-auto max-w-6xl px-4 py-8'>{children}</main>
+      </body>
     </html>
   )
 }

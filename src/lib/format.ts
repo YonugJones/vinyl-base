@@ -10,3 +10,17 @@ export function formatPrice(cents?: number | null) {
     currency: 'USD',
   }).format(cents / 100)
 }
+
+export function getInitials(name: string) {
+  const trimmed = name.trim()
+  if (!trimmed) return '?'
+
+  const parts = trimmed.split(/\s+/)
+  if (parts.length === 1) {
+    return parts[0][0].toUpperCase()
+  }
+
+  const first = parts[0][0] ?? ''
+  const last = parts[parts.length - 1][0] ?? ''
+  return (first + last).toUpperCase()
+}
