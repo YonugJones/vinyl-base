@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import type { CopyWithRelease } from '@/types/db'
 import { Card, CardContent } from '@/components/ui/card'
 import { Heart } from 'lucide-react'
+import { CoverArt } from '@/components/collection/CoverArt'
 import { AlbumFallback } from '@/components/media/AlbumFallback'
 
 type CopyCardProps = { copy: CopyWithRelease }
@@ -15,12 +15,12 @@ export function CopyCard({ copy }: CopyCardProps) {
           {/* Artwork */}
           <div className='relative aspect-square w-full overflow-hidden rounded-md border border-border bg-muted'>
             {copy.release.coverArt ? (
-              <Image
+              <CoverArt
                 src={copy.release.coverArt}
                 alt={`${copy.release.artist} - ${copy.release.title}`}
-                fill
                 className='object-cover'
                 sizes='(min-width: 1280px) 18vw, (min-width: 1024px) 20vw, (min-width: 640px) 40vw, 90vw'
+                fallback={<AlbumFallback />}
               />
             ) : (
               <AlbumFallback />

@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import type { CopyWithRelease } from '@/types/db'
 import { Card, CardContent } from '@/components/ui/card'
+import { CoverArt } from '@/components/collection/CoverArt'
 import { AlbumFallback } from '@/components/media/AlbumFallback'
 import { formatEnum, formatPrice } from '@/lib/format'
 import { Heart } from 'lucide-react'
@@ -16,12 +17,12 @@ export function CopyDetails({ copy }: CopyDetailsProps) {
           <div className='w-full md:w-72'>
             <div className='relative aspect-square w-full overflow-hidden rounded-md border border-border bg-muted'>
               {copy.release.coverArt ? (
-                <Image
+                <CoverArt
                   src={copy.release.coverArt}
                   alt={`${copy.release.artist} - ${copy.release.title}`}
-                  fill
                   className='object-cover'
                   sizes='(min-width: 768px) 288px, 90vw'
+                  fallback={<AlbumFallback />}
                 />
               ) : (
                 <AlbumFallback />
