@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import type { CopyWithRelease } from '@/types/db'
 import { Card, CardContent } from '@/components/ui/card'
 import { CoverArt } from '@/components/collection/CoverArt'
