@@ -1,3 +1,5 @@
+// UI formatting
+
 export function formatEnum(value?: string | null) {
   if (!value) return '—'
   return value.replaceAll('_', ' ')
