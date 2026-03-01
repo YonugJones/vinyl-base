@@ -73,7 +73,7 @@ export async function NavBar() {
 
                   <DropdownMenuItem asChild>
                     <Link
-                      href='#'
+                      href='/dashboard'
                       className='flex w-full items-center gap-2 px-3'
                     >
                       <Gauge />
@@ -83,7 +83,7 @@ export async function NavBar() {
 
                   <DropdownMenuItem asChild>
                     <Link
-                      href='#'
+                      href='/collection'
                       className='flex w-full items-center gap-2 px-3'
                     >
                       <LibraryBig />

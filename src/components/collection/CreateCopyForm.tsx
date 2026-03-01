@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import Image from 'next/image'
+import Link from 'next/link'
 import { format as formatDate } from 'date-fns'
 import { createCopy } from '@/server/actions/copy'
 import { Button } from '@/components/ui/button'
@@ -548,6 +549,14 @@ export function CreateCopyForm() {
                   Cover uploading…
                 </span>
               ) : null}
+              <Link href='/collection'>
+                <Button
+                  className='hover:cursor-pointer hover:text-foreground/50'
+                  variant='outline'
+                >
+                  Back to collection
+                </Button>
+              </Link>
             </div>
           </div>
         </form>
