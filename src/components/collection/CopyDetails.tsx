@@ -1,9 +1,13 @@
+'use client'
+
 import type { CopyWithRelease } from '@/types/db'
 import { Card, CardContent } from '@/components/ui/card'
 import { CoverArt } from '@/components/collection/CoverArt'
 import { AlbumFallback } from '@/components/media/AlbumFallback'
 import { formatEnum, formatPrice } from '@/lib/format'
 import { Heart } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { toggleIsFavorite } from '@/server/actions/copy'
 
 type CopyDetailsProps = { copy: CopyWithRelease }
 
@@ -38,14 +42,21 @@ export function CopyDetails({ copy }: CopyDetailsProps) {
                 <span className='text-foreground'>{copy.release.title}</span>
               </h1>
 
-              <Heart
-                className={`mt-1 h-5 w-5 shrink-0 ${
-                  copy.isFavorite
-                    ? 'fill-accent text-accent'
-                    : 'text-muted-foreground'
-                }`}
-                strokeWidth={1.5}
-              />
+              <Button
+                size='icon'
+                className='group h-6 w-6 bg-card hover:bg-card'
+                onClick={async () => {
+                  await toggleIsFavorite(copy.id)
+                }}
+              >
+                <Heart
+                  className={`h-5 w-5 shrink-0 transition-all ${
+                    copy.isFavorite
+                      ? 'fill-accent text-accent group-hover:fill-transparent'
+                      : 'text-muted-foreground group-hover:fill-accent group-hover:text-accent'
+                  }`}
+                />
+              </Button>
             </div>
 
             {/* 2 Colum Grid */}

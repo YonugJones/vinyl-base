@@ -103,3 +103,27 @@ export async function createCopy(
     return { ok: false, error: err instanceof Error ? err.message : 'Failed.' }
   }
 }
+
+export async function toggleIsFavorite(copyId: string): Promise<CopyState> {
+  try {
+    const session = await requireSession()
+    const user = session.user
+
+    const copy = await prisma.copy.findUnique({
+      where: { id: copyId, userId: user.id },
+      select: { isFavorite: true },
+    })
+    if (!copy) return { ok: false, error: 'Copy not found.' }
+
+    await prisma.copy.update({
+      where: { id: copyId, userId: user.id },
+      data: { isFavorite: !copy.isFavorite },
+    })
+
+    revalidatePath('/collection')
+    revalidatePath(`/collection/${copyId}`)
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed.' }
+  }
+}

@@ -1,9 +1,13 @@
+'use client'
+
 import Link from 'next/link'
 import type { CopyWithRelease } from '@/types/db'
 import { Card, CardContent } from '@/components/ui/card'
 import { Heart } from 'lucide-react'
 import { CoverArt } from '@/components/collection/CoverArt'
 import { AlbumFallback } from '@/components/media/AlbumFallback'
+import { Button } from '@/components/ui/button'
+import { toggleIsFavorite } from '@/server/actions/copy'
 
 type CopyCardProps = { copy: CopyWithRelease }
 
@@ -39,14 +43,24 @@ export function CopyCard({ copy }: CopyCardProps) {
             <div className='flex items-center justify-between pt-1 text-[11px] text-muted-foreground'>
               <span>{copy.release.year ?? '—'}</span>
 
-              <Heart
-                className={`h-4 w-4 ${
-                  copy.isFavorite
-                    ? 'fill-accent text-accent'
-                    : 'text-muted-foreground'
-                }`}
-                strokeWidth={1.5}
-              />
+              <Button
+                size='icon'
+                className='group h-6 w-6 bg-card hover:bg-card'
+                onClick={async (e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  await toggleIsFavorite(copy.id)
+                }}
+              >
+                <Heart
+                  className={`h-4 w-4 transition-all ${
+                    copy.isFavorite
+                      ? 'fill-accent text-accent group-hover:fill-transparent'
+                      : 'text-muted-foreground group-hover:fill-accent group-hover:text-accent'
+                  }`}
+                  strokeWidth={1.5}
+                />
+              </Button>
             </div>
 
             <div className='pt-1 text-[11px] text-muted-foreground'>
