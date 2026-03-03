@@ -13,6 +13,7 @@ import {
   optionalEnum,
   makeNormalizedKey,
 } from '@/lib/form'
+import { redirect } from 'next/navigation'
 
 type CopyState = { ok: true } | { ok: false; error: string }
 
@@ -102,6 +103,27 @@ export async function createCopy(
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Failed.' }
   }
+}
+
+export async function deleteCopy(copyId: string): Promise<CopyState> {
+  try {
+    const session = await requireSession()
+    const user = session.user
+
+    const copy = await prisma.copy.findUnique({
+      where: { id: copyId, userId: user.id },
+    })
+    if (!copy) return { ok: false, error: 'Copy not found.' }
+
+    await prisma.copy.delete({
+      where: { id: copyId, userId: user.id },
+    })
+
+    revalidatePath('/collection')
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed.' }
+  }
+  redirect('/collection')
 }
 
 export async function toggleIsFavorite(copyId: string): Promise<CopyState> {
