@@ -264,6 +264,11 @@ export function EditCopyForm({ copy }: { copy: CopyWithRelease }) {
               name='purchaseDate'
               value={purchaseDate ? formatDate(purchaseDate, 'yyyy-MM-dd') : ''}
             />
+            <input
+              type='hidden'
+              name='isFavorite'
+              value={copy.isFavorite ? 'true' : 'false'}
+            />
 
             {/* Acquisition */}
             <div className='rounded-md border p-4'>
