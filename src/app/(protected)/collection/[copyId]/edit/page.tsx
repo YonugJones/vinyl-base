@@ -1,11 +1,13 @@
 import { EditCopyForm } from '@/components/collection/EditCopyForm'
 import { notFound } from 'next/navigation'
 import { getCopy } from '@/server/queries/collection'
+import { requireSession } from '@/server/auth/session'
 
 type Params = { copyId: string }
 type Props = { params: Promise<Params> }
 
 export default async function EditCopyPage({ params }: Props) {
+  await requireSession()
   const { copyId } = await params
   if (!copyId) notFound()
 

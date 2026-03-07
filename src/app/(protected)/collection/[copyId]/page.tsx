@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { requireSession } from '@/server/auth/session'
 import { getCopy } from '@/server/queries/collection'
 import { CopyDetails } from '@/components/collection/CopyDetails'
 import { DeleteCopyButton } from '@/components/collection/DeleteCopyButton'
@@ -9,6 +10,7 @@ type Params = { copyId: string }
 type Props = { params: Promise<Params> }
 
 export default async function CopyDetailsPage({ params }: Props) {
+  await requireSession()
   const { copyId } = await params
   if (!copyId) notFound()
 

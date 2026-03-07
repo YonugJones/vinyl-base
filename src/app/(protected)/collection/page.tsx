@@ -2,8 +2,10 @@ import { getCopies } from '@/server/queries/collection'
 import { CopyCard } from '@/components/collection/CopyCard'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { requireSession } from '@/server/auth/session'
 
 export default async function CollectionPage() {
+  await requireSession()
   const copies = await getCopies()
 
   return (
