@@ -10,7 +10,7 @@ export default async function CollectionPage() {
     <main className='min-h-screen bg-background text-foreground px-6'>
       <div className='pb-8 flex items-center justify-center'>
         <Link href='/collection/new'>
-          <Button className='bg-accent hover:bg-accent/90 hover:cursor-pointer'>
+          <Button className='bg-accent hover:bg-accent/90 hover:cursor-pointer hover:text-white'>
             Add to collection
           </Button>
         </Link>

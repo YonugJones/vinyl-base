@@ -20,7 +20,7 @@ export function DeleteCopyButton({ copyId }: { copyId: string }) {
       <AlertDialogTrigger asChild>
         <Button
           variant='destructive'
-          className='hover:cursor-pointer hover:text-destructive'
+          className='text-foreground hover:text-destructive hover:cursor-pointer'
         >
           Remove from Collection
         </Button>

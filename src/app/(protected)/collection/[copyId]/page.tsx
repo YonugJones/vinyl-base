@@ -18,24 +18,22 @@ export default async function CopyDetailsPage({ params }: Props) {
   return (
     <>
       <CopyDetails copy={copy} />
-      <div className='flex justify-center items-center gap-5 mt-8'>
+      {/* Button div */}
+      <div className='mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3'>
         <Link href='/collection'>
           <Button
-            className='hover:cursor-pointer hover:text-foreground/50'
+            className='hover:cursor-pointer hover:text-muted-foreground w-full'
             variant='outline'
           >
             Back to collection
           </Button>
         </Link>
+        <Link href={`/collection/${copyId}/edit`}>
+          <Button className='hover:cursor-pointer hover:text-accent w-full'>
+            Edit album
+          </Button>
+        </Link>
         <DeleteCopyButton copyId={copyId} />
-
-        {/* <Button
-          variant='destructive'
-          className='hover:cursor-pointer hover:text-destructive'
-          onClick={deleteCopy(copyId)}
-        >
-          Remove from Collection
-        </Button> */}
       </div>
     </>
   )

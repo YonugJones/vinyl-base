@@ -1,11 +1,12 @@
 'use client'
 
-import { useActionState, useEffect, useMemo, useRef, useState } from 'react'
+import { useActionState, useMemo, useState } from 'react'
 import { useFormStatus } from 'react-dom'
+import type { CopyWithRelease } from '@/types/db'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format as formatDate } from 'date-fns'
-import { createCopy } from '@/server/actions/copy'
+import { editCopy } from '@/server/actions/copy'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -40,22 +41,22 @@ function SubmitButton({ disabled }: { disabled?: boolean }) {
       type='submit'
       disabled={isDisabled}
       className='
-        bg-accent hover:bg-accent/90 hover:cursor-pointer transition-all duration-200 hover:text-white
+        bg-accent hover:bg-accent/80 hover:cursor-pointer transition-all duration-200
       '
     >
-      {pending ? 'Adding to collection...' : 'Add to collection'}
+      {pending ? 'Updating...' : 'Update'}
     </Button>
   )
 }
 
-export function CreateCopyForm() {
+export function EditCopyForm({ copy }: { copy: CopyWithRelease }) {
+  const editCopyWithId = editCopy.bind(null, copy.id)
   const [state, formAction] = useActionState<ActionState | null, FormData>(
-    createCopy,
+    editCopyWithId,
     null,
   )
-  const formRef = useRef<HTMLFormElement | null>(null)
 
-  const [rpm, setRpm] = useState<Rpm | null>(null)
+  const [rpm, setRpm] = useState<Rpm | null>(copy.release.rpm)
   const rpmLabel = useMemo(() => {
     if (!rpm) return 'RPM'
     if (rpm === 'RPM_33') return '33 RPM'
@@ -63,7 +64,7 @@ export function CreateCopyForm() {
     return '78 RPM'
   }, [rpm])
 
-  const [format, setFormat] = useState<Format | null>(null)
+  const [format, setFormat] = useState<Format | null>(copy.release.format)
   const formatLabel = useMemo(() => {
     if (!format) return 'Format'
     if (format === 'LP') return 'LP'
@@ -72,7 +73,9 @@ export function CreateCopyForm() {
     return 'Box set'
   }, [format])
 
-  const [mediaCondition, setMediaCondition] = useState<Condition | null>(null)
+  const [mediaCondition, setMediaCondition] = useState<Condition | null>(
+    copy.mediaCondition,
+  )
   const mediaConditionLabel = useMemo(() => {
     if (!mediaCondition) return 'Media condition'
     if (mediaCondition === 'MINT') return 'Mint'
@@ -85,7 +88,9 @@ export function CreateCopyForm() {
     return 'Poor'
   }, [mediaCondition])
 
-  const [sleeveCondition, setSleeveCondition] = useState<Condition | null>(null)
+  const [sleeveCondition, setSleeveCondition] = useState<Condition | null>(
+    copy.sleeveCondition,
+  )
   const sleeveConditionLabel = useMemo(() => {
     if (!sleeveCondition) return 'Sleeve condition'
     if (sleeveCondition === 'MINT') return 'Mint'
@@ -98,24 +103,15 @@ export function CreateCopyForm() {
     return 'Poor'
   }, [sleeveCondition])
 
-  const [purchaseDate, setPurchaseDate] = useState<Date | undefined>(undefined)
+  const [purchaseDate, setPurchaseDate] = useState<Date | null>(
+    copy.purchaseDate,
+  )
   const [purchaseDateOpen, setPurchaseDateOpen] = useState(false)
-  const [coverArtUrl, setCoverArtUrl] = useState<string | null>(null)
+  const [coverArtUrl, setCoverArtUrl] = useState<string | null>(
+    copy.release.coverArt,
+  )
   const [uploadingCover, setUploadingCover] = useState(false)
   const [coverError, setCoverError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (state?.ok) {
-      formRef.current?.reset()
-      setPurchaseDate(undefined)
-      setCoverArtUrl(null)
-      setCoverError(null)
-      setRpm(null)
-      setFormat(null)
-      setMediaCondition(null)
-      setSleeveCondition(null)
-    }
-  }, [state])
 
   async function handleCoverFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const input = e.currentTarget
@@ -154,12 +150,12 @@ export function CreateCopyForm() {
     <Card className='max-w-2xl'>
       <CardHeader className='space-y-1'>
         <CardTitle className='flex items-center justify-center text-base'>
-          Add a record
+          Update record
         </CardTitle>
       </CardHeader>
 
       <CardContent className='space-y-6'>
-        <form action={formAction} ref={formRef} className='space-y-6'>
+        <form action={formAction} className='space-y-6'>
           <div className='space-y-6'>
             {/* Release: artist/title */}
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
@@ -167,6 +163,7 @@ export function CreateCopyForm() {
                 id='artist'
                 name='artist'
                 type='text'
+                defaultValue={copy.release.artist}
                 placeholder='Artist *'
                 required
               />
@@ -174,6 +171,7 @@ export function CreateCopyForm() {
                 id='title'
                 name='title'
                 type='text'
+                defaultValue={copy.release.title}
                 placeholder='Title *'
                 required
               />
@@ -181,8 +179,20 @@ export function CreateCopyForm() {
 
             {/* Release: year/label */}
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-              <Input id='year' name='year' type='text' placeholder='Year' />
-              <Input id='label' name='label' type='text' placeholder='Label' />
+              <Input
+                id='year'
+                name='year'
+                type='text'
+                defaultValue={copy.release.year ?? undefined}
+                placeholder='Year'
+              />
+              <Input
+                id='label'
+                name='label'
+                type='text'
+                defaultValue={copy.release.label ?? undefined}
+                placeholder='Label'
+              />
             </div>
 
             {/* Cover art */}
@@ -259,7 +269,7 @@ export function CreateCopyForm() {
             <div className='rounded-md border p-4'>
               <div className='mb-3 text-sm font-medium'>Acquisition</div>
 
-              <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
                 <Dialog
                   open={purchaseDateOpen}
                   onOpenChange={setPurchaseDateOpen}
@@ -288,9 +298,9 @@ export function CreateCopyForm() {
                     <div className='p-4 pt-2'>
                       <Calendar
                         mode='single'
-                        selected={purchaseDate}
+                        selected={purchaseDate ?? undefined}
                         onSelect={(date) => {
-                          setPurchaseDate(date)
+                          setPurchaseDate(date ?? null)
                           if (date) setPurchaseDateOpen(false)
                         }}
                         autoFocus
@@ -302,7 +312,7 @@ export function CreateCopyForm() {
                           variant='ghost'
                           className='w-full'
                           onClick={() => {
-                            setPurchaseDate(undefined)
+                            setPurchaseDate(null)
                             setPurchaseDateOpen(false)
                           }}
                         >
@@ -316,12 +326,14 @@ export function CreateCopyForm() {
                 <Input
                   id='purchasePriceCents'
                   name='purchasePriceCents'
+                  defaultValue={copy.purchasePriceCents ?? undefined}
                   placeholder='Purchase price'
                 />
 
                 <Input
                   id='storageLocation'
                   name='storageLocation'
+                  defaultValue={copy.storageLocation ?? undefined}
                   placeholder='Storage location'
                 />
               </div>
@@ -532,7 +544,12 @@ export function CreateCopyForm() {
 
             {/* Notes */}
             <div className='space-y-2'>
-              <Textarea id='notes' name='notes' placeholder='Notes...' />
+              <Textarea
+                id='notes'
+                name='notes'
+                defaultValue={copy.notes ?? undefined}
+                placeholder='Notes...'
+              />
             </div>
 
             {state && state.ok === false && (
@@ -541,19 +558,19 @@ export function CreateCopyForm() {
               </div>
             )}
 
-            <div className='gap-3 grid sm:grid-cols-1 md:grid-cols-2'>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <SubmitButton disabled={uploadingCover} />
               {uploadingCover ? (
                 <span className='text-xs text-muted-foreground'>
                   Cover uploading…
                 </span>
               ) : null}
-              <Link href='/collection'>
+              <Link href={`/collection/${copy.id}`}>
                 <Button
-                  className='hover:cursor-pointer hover:text-muted-foreground w-full'
+                  className='hover:cursor-pointer hover:text-foreground/50 w-full'
                   variant='outline'
                 >
-                  Back to collection
+                  Back to details
                 </Button>
               </Link>
             </div>

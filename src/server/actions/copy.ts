@@ -25,19 +25,17 @@ export async function createCopy(
     const session = await requireSession()
     const user = session.user
 
-    // --- Release fields (manual entry) ---
+    // --- Release fields ---
     const artist = mustString(formData.get('artist'), 'artist')
     const title = mustString(formData.get('title'), 'title')
     const year = optionalInt(formData.get('year'))
     const label = optionalString(formData.get('label'))
     const coverArt = optionalString(formData.get('coverArt'))
-
     const format = optionalEnum(formData.get('format'), Object.values(Format))
     const rpm = optionalEnum(formData.get('rpm'), Object.values(Rpm))
-
     const normalizedKey = makeNormalizedKey(artist, title, year)
 
-    // Dedupe: upsert by unique normalizedKey
+    // --- Dedupe Release using normalizedKey ---
     const release = await prisma.release.upsert({
       where: { normalizedKey },
       create: {
@@ -62,9 +60,8 @@ export async function createCopy(
       select: { id: true },
     })
 
-    // --- Copy fields (manual entry) ---
+    // --- Copy fields ---
     const purchaseDate = optionalDate(formData.get('purchaseDate'))
-
     const purchasePriceCents = optionalInt(formData.get('purchasePriceCents'))
     if (purchasePriceCents != null && purchasePriceCents < 0) {
       return { ok: false, error: 'Purchase price cannot be negative' }
@@ -78,11 +75,11 @@ export async function createCopy(
       formData.get('sleeveCondition'),
       Object.values(Condition),
     )
-
     const notes = optionalString(formData.get('notes'))
     const isFavorite = checkboxToBool(formData.get('isFavorite'))
     const storageLocation = optionalString(formData.get('storageLocation'))
 
+    // --- Create copy ---
     await prisma.copy.create({
       data: {
         userId: user.id,
@@ -96,6 +93,97 @@ export async function createCopy(
         storageLocation,
       },
       select: { id: true },
+    })
+
+    revalidatePath('/collection')
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed.' }
+  }
+}
+
+export async function editCopy(
+  copyId: string,
+  _prevState: CopyState | null,
+  formData: FormData,
+): Promise<CopyState> {
+  try {
+    const session = await requireSession()
+    const user = session.user
+
+    const copy = await prisma.copy.findUnique({
+      where: { id: copyId, userId: user.id },
+    })
+    if (!copy) return { ok: false, error: 'Copy not found.' }
+
+    // --- Release fields ---
+    const artist = mustString(formData.get('artist'), 'artist')
+    const title = mustString(formData.get('title'), 'title')
+    const year = optionalInt(formData.get('year'))
+    const label = optionalString(formData.get('label'))
+    const coverArt = optionalString(formData.get('coverArt'))
+    const format = optionalEnum(formData.get('format'), Object.values(Format))
+    const rpm = optionalEnum(formData.get('rpm'), Object.values(Rpm))
+    const normalizedKey = makeNormalizedKey(artist, title, year)
+
+    // --- Dedupe Release using normalizedKey ---
+    const release = await prisma.release.upsert({
+      where: { normalizedKey },
+      create: {
+        artist,
+        title,
+        year,
+        label,
+        coverArt,
+        format,
+        rpm,
+        normalizedKey,
+      },
+      update: {
+        artist,
+        title,
+        year,
+        label,
+        coverArt,
+        format,
+        rpm,
+      },
+    })
+
+    // --- Copy fields ---
+    const purchaseDate = optionalDate(formData.get('purchaseDate'))
+    const purchasePriceCents = optionalInt(formData.get('purchasePriceCents'))
+    if (purchasePriceCents !== null && purchasePriceCents < 0) {
+      return { ok: false, error: 'Purchase price cannot be negative' }
+    }
+
+    const mediaCondition = optionalEnum(
+      formData.get('mediaCondition'),
+      Object.values(Condition),
+    )
+
+    const sleeveCondition = optionalEnum(
+      formData.get('sleeveCondition'),
+      Object.values(Condition),
+    )
+
+    const notes = optionalString(formData.get('notes'))
+    const isFavorite = checkboxToBool(formData.get('isFavorite'))
+    const storageLocation = optionalString(formData.get('storageLocation'))
+
+    // --- Update copy
+    await prisma.copy.update({
+      where: { id: copyId, userId: user.id },
+      data: {
+        releaseId: release.id,
+        purchaseDate,
+        purchasePriceCents,
+        mediaCondition,
+        sleeveCondition,
+        notes,
+        isFavorite,
+        storageLocation,
+      },
     })
 
     revalidatePath('/collection')
