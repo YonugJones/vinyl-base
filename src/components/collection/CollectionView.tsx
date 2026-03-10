@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import type { CopyWithRelease } from '@/types/db'
 import { CopyCard } from './CopyCard'
@@ -12,6 +12,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import { Search } from 'lucide-react'
 import { ArrowUp, ArrowDown } from 'lucide-react'
 
 type FilterBy = 'artist' | 'title' | 'year' | 'label'
@@ -27,6 +29,16 @@ const filterLabels: Record<FilterBy, string> = {
 export function CollectionView({ copies }: { copies: CopyWithRelease[] }) {
   const [filterBy, setFilterBy] = useState<FilterBy>('artist')
   const [direction, setDirection] = useState<Direction>('asc')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery)
+    }, 400)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   const sortedCopies = useMemo(() => {
     return [...copies].sort((a, b) => {
@@ -53,17 +65,37 @@ export function CollectionView({ copies }: { copies: CopyWithRelease[] }) {
     })
   }, [copies, filterBy, direction])
 
+  const filteredCopies = useMemo(() => {
+    const q = debouncedQuery.toLowerCase().trim()
+    if (!q) return sortedCopies
+    return sortedCopies.filter((copy) => {
+      return (
+        copy.release.artist.toLowerCase().includes(q) ||
+        copy.release.title.toLowerCase().includes(q) ||
+        copy.release.label?.toLowerCase().includes(q)
+      )
+    })
+  }, [sortedCopies, debouncedQuery])
+
   return (
     <>
-      <div className='flex items-center justify-between gap-2 mb-8'>
-        <div className='flex'>
+      <div className='flex flex-col sm:flex-row items-center justify-between gap-2 mb-8'>
+        <div className='flex justify-center sm:justify-start w-full sm:w-auto'>
           <Link href='/collection/new'>
             <Button className='bg-accent hover:bg-accent/90 hover:cursor-pointer hover:text-white'>
               Add to collection
             </Button>
           </Link>
         </div>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-2 sm:w-auto'>
+          <Search />
+          <Input
+            placeholder='Search collection...'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className='flex justify-center sm:justify-start items-center gap-2 w-full sm:w-auto'>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -102,7 +134,7 @@ export function CollectionView({ copies }: { copies: CopyWithRelease[] }) {
       </div>
 
       <div className='mx-auto grid max-w-7xl gap-4 grid-cols-[repeat(auto-fill,minmax(170px,1fr))]'>
-        {sortedCopies.map((copy) => (
+        {filteredCopies.map((copy) => (
           <CopyCard key={copy.id} copy={copy} />
         ))}
       </div>
