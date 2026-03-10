@@ -96,10 +96,10 @@ export async function createCopy(
     })
 
     revalidatePath('/collection')
-    return { ok: true }
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Failed.' }
   }
+  redirect('/collection')
 }
 
 export async function editCopy(
@@ -187,10 +187,10 @@ export async function editCopy(
     })
 
     revalidatePath('/collection')
-    return { ok: true }
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Failed.' }
   }
+  redirect(`/collection/${copyId}`)
 }
 
 export async function deleteCopy(copyId: string): Promise<CopyState> {
