@@ -103,7 +103,7 @@ export async function NavBar() {
 
                   <DropdownMenuItem asChild>
                     <Link
-                      href='#'
+                      href={`/user/${user.id}`}
                       className='flex w-full items-center gap-2 px-3'
                     >
                       <User />
