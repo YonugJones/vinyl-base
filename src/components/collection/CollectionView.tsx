@@ -100,7 +100,7 @@ export function CollectionView({ copies }: { copies: CopyWithRelease[] }) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant='outline'
-                className='hover:cursor-pointer hover:text-foreground/70'
+                className='hover:cursor-pointer hover:text-accent'
               >
                 Filter by: {filterLabels[filterBy]}
               </Button>
@@ -125,7 +125,7 @@ export function CollectionView({ copies }: { copies: CopyWithRelease[] }) {
 
           <Button
             variant='outline'
-            className='hover:cursor-pointer'
+            className='hover:cursor-pointer hover:text-accent'
             onClick={() => setDirection(direction === 'asc' ? 'desc' : 'asc')}
           >
             {direction === 'asc' ? <ArrowUp /> : <ArrowDown />}

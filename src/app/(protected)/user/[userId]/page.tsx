@@ -9,8 +9,8 @@ export default async function UserPage() {
   if (!userDetails) notFound()
 
   return (
-    <main className='min-h-screen bg-background text-foreground px-6 flex items-center justify-center'>
+    <div className='flex h-full items-center justify-center'>
       <UserDetails user={userDetails} />
-    </main>
+    </div>
   )
 }

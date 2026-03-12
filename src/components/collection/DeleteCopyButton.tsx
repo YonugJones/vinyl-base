@@ -20,7 +20,7 @@ export function DeleteCopyButton({ copyId }: { copyId: string }) {
       <AlertDialogTrigger asChild>
         <Button
           variant='destructive'
-          className='text-foreground hover:text-destructive hover:cursor-pointer'
+          className='text-black hover:cursor-pointer hover:text-destructive'
         >
           Remove from Collection
         </Button>
@@ -33,8 +33,14 @@ export function DeleteCopyButton({ copyId }: { copyId: string }) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => deleteCopy(copyId)}>
+          <AlertDialogCancel className='hover:cursor-pointer hover:text-amber-600'>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            variant='destructive'
+            className='hover:cursor-pointer hover:text-destructive'
+            onClick={() => deleteCopy(copyId)}
+          >
             Remove
           </AlertDialogAction>
         </AlertDialogFooter>
