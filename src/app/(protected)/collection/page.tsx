@@ -3,8 +3,8 @@ import { CollectionView } from '@/components/collection/CollectionView'
 import { requireSession } from '@/server/auth/session'
 
 export default async function CollectionPage() {
-  await requireSession()
-  const copies = await getCopies()
+  const { user } = await requireSession()
+  const copies = await getCopies(user.id)
 
   return (
     <>

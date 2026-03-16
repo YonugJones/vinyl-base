@@ -1,8 +1,9 @@
 import prisma from '@/lib/prisma'
 import type { CopyWithRelease } from '@/types/db'
 
-export async function getCopies(): Promise<CopyWithRelease[]> {
+export async function getCopies(userId: string): Promise<CopyWithRelease[]> {
   return prisma.copy.findMany({
+    where: { userId },
     take: 64,
     orderBy: { createdAt: 'desc' },
     include: { release: true },
