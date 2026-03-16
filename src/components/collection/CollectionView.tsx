@@ -133,11 +133,38 @@ export function CollectionView({ copies }: { copies: CopyWithRelease[] }) {
         </div>
       </div>
 
-      <div className='mx-auto grid max-w-7xl gap-4 grid-cols-[repeat(auto-fill,minmax(170px,1fr))]'>
-        {filteredCopies.map((copy) => (
-          <CopyCard key={copy.id} copy={copy} />
-        ))}
-      </div>
+      {filteredCopies.length === 0 ? (
+        <div className='flex flex-col items-center justify-center gap-3 py-24 text-center'>
+          {searchQuery ? (
+            <>
+              <p className='text-lg font-medium'>
+                No results for &quot;{debouncedQuery}&quot;
+              </p>
+              <p className='text-sm text-muted-foreground'>
+                Try a different search term
+              </p>
+            </>
+          ) : (
+            <>
+              <p className='text-lg font-medium'>Your collection is empty</p>
+              <p className='text-sm text-muted-foreground'>
+                Add your first record to get started
+              </p>
+              <Link href='/collection/new'>
+                <Button className='bg-accent hover:bg-accent/90 hover:cursor-pointer hover:text-white'>
+                  Add a record
+                </Button>
+              </Link>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className='mx-auto grid max-w-7xl gap-4 grid-cols-[repeat(auto-fill,minmax(170px,1fr))]'>
+          {filteredCopies.map((copy) => (
+            <CopyCard key={copy.id} copy={copy} />
+          ))}
+        </div>
+      )}
     </>
   )
 }
