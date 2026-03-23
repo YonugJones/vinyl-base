@@ -32,6 +32,19 @@ import { CalendarIcon } from 'lucide-react'
 
 type ActionState = { ok: true } | { ok: false; error: string }
 
+type Prefill = {
+  artist?: string
+  title?: string
+  year?: string
+  label?: string
+  format?: string
+  coverArt?: string
+}
+
+type CreateCopyFormProps = {
+  prefill?: Prefill
+}
+
 function SubmitButton({ disabled }: { disabled?: boolean }) {
   const { pending } = useFormStatus()
   const isDisabled = pending || disabled
@@ -48,7 +61,7 @@ function SubmitButton({ disabled }: { disabled?: boolean }) {
   )
 }
 
-export function CreateCopyForm() {
+export function CreateCopyForm({ prefill }: CreateCopyFormProps) {
   const [state, formAction] = useActionState<ActionState | null, FormData>(
     createCopy,
     null,
@@ -63,7 +76,9 @@ export function CreateCopyForm() {
     return '78 RPM'
   }, [rpm])
 
-  const [format, setFormat] = useState<Format | null>(null)
+  const [format, setFormat] = useState<Format | null>(
+    (prefill?.format as Format) ?? null,
+  )
   const formatLabel = useMemo(() => {
     if (!format) return 'Format'
     if (format === 'LP') return 'LP'
@@ -100,7 +115,9 @@ export function CreateCopyForm() {
 
   const [purchaseDate, setPurchaseDate] = useState<Date | undefined>(undefined)
   const [purchaseDateOpen, setPurchaseDateOpen] = useState(false)
-  const [coverArtUrl, setCoverArtUrl] = useState<string | null>(null)
+  const [coverArtUrl, setCoverArtUrl] = useState<string | null>(
+    prefill?.coverArt ?? null,
+  )
   const [uploadingCover, setUploadingCover] = useState(false)
   const [coverError, setCoverError] = useState<string | null>(null)
 
@@ -169,6 +186,7 @@ export function CreateCopyForm() {
                 type='text'
                 placeholder='Artist *'
                 required
+                defaultValue={prefill?.artist ?? ''}
               />
               <Input
                 id='title'
@@ -176,13 +194,26 @@ export function CreateCopyForm() {
                 type='text'
                 placeholder='Title *'
                 required
+                defaultValue={prefill?.title ?? ''}
               />
             </div>
 
             {/* Release: year/label */}
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-              <Input id='year' name='year' type='text' placeholder='Year' />
-              <Input id='label' name='label' type='text' placeholder='Label' />
+              <Input
+                id='year'
+                name='year'
+                type='text'
+                placeholder='Year'
+                defaultValue={prefill?.year ?? ''}
+              />
+              <Input
+                id='label'
+                name='label'
+                type='text'
+                placeholder='Label'
+                defaultValue={prefill?.label ?? ''}
+              />
             </div>
 
             {/* Cover art */}
