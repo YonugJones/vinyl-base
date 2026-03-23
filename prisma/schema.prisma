@@ -38,14 +38,14 @@ enum Rpm {
 }
 
 model Release {
-  id       String  @id @default(cuid())
-  artist   String
-  title    String
-  year     Int?
-  label    String?
-  coverArt String?
-  format   Format?
-  rpm      Rpm?
+  id        String  @id @default(cuid())
+  discogsId Int?    @unique
+  artist    String
+  title     String
+  year      Int?
+  label     String?
+  coverArt  String?
+  format    Format?
 
   normalizedKey String @unique
 
@@ -69,6 +69,7 @@ model Copy {
 
   purchaseDate       DateTime?
   purchasePriceCents Int?
+  rpm                Rpm?
   mediaCondition     Condition?
   sleeveCondition    Condition?
   notes              String?    @db.Text
