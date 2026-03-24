@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useMemo, useState } from 'react'
+import { useActionState, useMemo, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -102,16 +102,6 @@ export function CreateCopyForm({ prefill }: CreateCopyFormProps) {
 
   const [purchaseDate, setPurchaseDate] = useState<Date | undefined>(undefined)
   const [purchaseDateOpen, setPurchaseDateOpen] = useState(false)
-
-  useEffect(() => {
-    if (state?.ok) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPurchaseDate(undefined)
-      setRpm(null)
-      setMediaCondition(null)
-      setSleeveCondition(null)
-    }
-  }, [state])
 
   return (
     <Card className='max-w-2xl'>
