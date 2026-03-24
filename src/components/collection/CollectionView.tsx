@@ -81,9 +81,9 @@ export function CollectionView({ copies }: { copies: CopyWithRelease[] }) {
     <>
       <div className='flex flex-col sm:flex-row items-center justify-between gap-2 mb-8'>
         <div className='flex justify-center sm:justify-start w-full sm:w-auto'>
-          <Link href='/collection/new'>
+          <Link href='/browse'>
             <Button className='bg-accent hover:bg-accent/90 hover:cursor-pointer hover:text-white'>
-              Add to collection
+              Browse
             </Button>
           </Link>
         </div>
