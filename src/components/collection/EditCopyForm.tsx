@@ -10,7 +10,6 @@ import { editCopy } from '@/server/actions/copy'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -28,21 +27,18 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Calendar } from '@/components/ui/calendar'
 import { cn } from '@/lib/utils'
-import { Rpm, Format, Condition } from '@/generated/prisma'
+import { Rpm, Condition } from '@/generated/prisma'
 import { CalendarIcon } from 'lucide-react'
 
 type ActionState = { ok: true } | { ok: false; error: string }
 
-function SubmitButton({ disabled }: { disabled?: boolean }) {
+function SubmitButton() {
   const { pending } = useFormStatus()
-  const isDisabled = pending || disabled
   return (
     <Button
       type='submit'
-      disabled={isDisabled}
-      className='
-        bg-accent hover:bg-accent/80 hover:cursor-pointer transition-all duration-200
-      '
+      disabled={pending}
+      className='bg-accent hover:bg-accent/80 hover:cursor-pointer transition-all duration-200'
     >
       {pending ? 'Updating...' : 'Update'}
     </Button>
@@ -56,22 +52,13 @@ export function EditCopyForm({ copy }: { copy: CopyWithRelease }) {
     null,
   )
 
-  const [rpm, setRpm] = useState<Rpm | null>(copy.release.rpm)
+  const [rpm, setRpm] = useState<Rpm | null>(copy.rpm)
   const rpmLabel = useMemo(() => {
     if (!rpm) return 'RPM'
     if (rpm === 'RPM_33') return '33 RPM'
     if (rpm === 'RPM_45') return '45 RPM'
     return '78 RPM'
   }, [rpm])
-
-  const [format, setFormat] = useState<Format | null>(copy.release.format)
-  const formatLabel = useMemo(() => {
-    if (!format) return 'Format'
-    if (format === 'LP') return 'LP'
-    if (format === 'EP') return 'EP'
-    if (format === 'SINGLE') return 'Single'
-    return 'Box set'
-  }, [format])
 
   const [mediaCondition, setMediaCondition] = useState<Condition | null>(
     copy.mediaCondition,
@@ -107,44 +94,6 @@ export function EditCopyForm({ copy }: { copy: CopyWithRelease }) {
     copy.purchaseDate,
   )
   const [purchaseDateOpen, setPurchaseDateOpen] = useState(false)
-  const [coverArtUrl, setCoverArtUrl] = useState<string | null>(
-    copy.release.coverArt,
-  )
-  const [uploadingCover, setUploadingCover] = useState(false)
-  const [coverError, setCoverError] = useState<string | null>(null)
-
-  async function handleCoverFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const input = e.currentTarget
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setCoverError(null)
-    setUploadingCover(true)
-
-    try {
-      const fd = new FormData()
-      fd.append('file', file)
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: fd,
-      })
-
-      const data = (await res.json()) as { url?: string; error?: string }
-
-      if (!res.ok || !data.url) {
-        setCoverError(data.error ?? 'Upload failed.')
-        return
-      }
-
-      setCoverArtUrl(data.url)
-    } catch {
-      setCoverError('Upload failed.')
-    } finally {
-      setUploadingCover(false)
-      input.value = ''
-    }
-  }
 
   return (
     <Card className='max-w-2xl'>
@@ -156,429 +105,314 @@ export function EditCopyForm({ copy }: { copy: CopyWithRelease }) {
 
       <CardContent className='space-y-6'>
         <form action={formAction} className='space-y-6'>
-          <div className='space-y-6'>
-            {/* Release: artist/title */}
-            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-              <Input
-                id='artist'
-                name='artist'
-                type='text'
-                defaultValue={copy.release.artist}
-                placeholder='Artist *'
-                required
-              />
-              <Input
-                id='title'
-                name='title'
-                type='text'
-                defaultValue={copy.release.title}
-                placeholder='Title *'
-                required
-              />
-            </div>
+          {/* Release info (read-only) */}
+          <div className='rounded-md border bg-muted/20 p-4'>
+            <div className='mb-3 text-sm font-medium'>Release</div>
 
-            {/* Release: year/label */}
-            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-              <Input
-                id='year'
-                name='year'
-                type='text'
-                defaultValue={copy.release.year ?? undefined}
-                placeholder='Year'
-              />
-              <Input
-                id='label'
-                name='label'
-                type='text'
-                defaultValue={copy.release.label ?? undefined}
-                placeholder='Label'
-              />
-            </div>
-
-            {/* Cover art */}
-            <div className='rounded-md border bg-muted/20 p-4'>
-              <div className='mb-3 text-sm font-medium'>Cover art</div>
-
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto] md:items-start'>
-                <div className='space-y-2'>
-                  <Label htmlFor='coverFile' className='sr-only'>
-                    Cover art
-                  </Label>
-
-                  <Input
-                    id='coverFile'
-                    name='coverFile'
-                    type='file'
-                    accept='image/png,image/jpeg,image/webp'
-                    onChange={handleCoverFileChange}
-                    disabled={uploadingCover}
+            <div className='flex items-center gap-4'>
+              {copy.release.coverArt ? (
+                <div className='relative h-16 w-16 shrink-0 overflow-hidden rounded-md border'>
+                  <Image
+                    src={copy.release.coverArt}
+                    alt={copy.release.title}
+                    fill
+                    className='object-cover'
                   />
-
-                  {uploadingCover ? (
-                    <p className='text-sm text-muted-foreground'>
-                      Uploading...
-                    </p>
-                  ) : null}
-
-                  {coverError ? (
-                    <p className='text-sm text-destructive'>{coverError}</p>
-                  ) : null}
-
-                  {!coverArtUrl && !uploadingCover ? (
-                    <p className='text-xs text-muted-foreground'>
-                      PNG, JPEG, or WebP. Recommended: square cover art.
-                    </p>
-                  ) : null}
                 </div>
+              ) : null}
 
-                {coverArtUrl ? (
-                  <div className='relative aspect-square w-32 overflow-hidden rounded-md border md:w-40'>
-                    <Image
-                      src={coverArtUrl}
-                      alt='Cover preview'
-                      fill
-                      className='object-cover'
-                      sizes='(min-width: 768px) 160px, 128px'
+              <div className='min-w-0'>
+                <p className='font-medium'>{copy.release.artist}</p>
+                <p className='text-sm text-muted-foreground'>
+                  {copy.release.title}
+                </p>
+                <p className='text-xs text-muted-foreground'>
+                  {[copy.release.year, copy.release.label, copy.release.format]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Hidden Copy state inputs */}
+          <input type='hidden' name='rpm' value={rpm ?? ''} />
+          <input
+            type='hidden'
+            name='mediaCondition'
+            value={mediaCondition ?? ''}
+          />
+          <input
+            type='hidden'
+            name='sleeveCondition'
+            value={sleeveCondition ?? ''}
+          />
+          <input
+            type='hidden'
+            name='purchaseDate'
+            value={purchaseDate ? formatDate(purchaseDate, 'yyyy-MM-dd') : ''}
+          />
+          <input
+            type='hidden'
+            name='isFavorite'
+            value={copy.isFavorite ? 'true' : 'false'}
+          />
+
+          {/* Acquisition */}
+          <div className='rounded-md border p-4'>
+            <div className='mb-3 text-sm font-medium'>Acquisition</div>
+
+            <div className='grid grid-cols-1 gap-4 lg:grid-cols-3'>
+              <Dialog
+                open={purchaseDateOpen}
+                onOpenChange={setPurchaseDateOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    className={cn(
+                      'w-full justify-start text-left font-normal',
+                      !purchaseDate && 'text-muted-foreground',
+                    )}
+                  >
+                    <CalendarIcon className='mr-2 h-4 w-4' />
+                    {purchaseDate
+                      ? formatDate(purchaseDate, 'PPP')
+                      : 'Purchase date'}
+                  </Button>
+                </DialogTrigger>
+
+                <DialogContent className='w-auto p-0'>
+                  <DialogHeader className='p-4 pb-0'>
+                    <DialogTitle>Purchase date</DialogTitle>
+                  </DialogHeader>
+                  <div className='p-4 pt-2'>
+                    <Calendar
+                      mode='single'
+                      selected={purchaseDate ?? undefined}
+                      onSelect={(date) => {
+                        setPurchaseDate(date ?? null)
+                        if (date) setPurchaseDateOpen(false)
+                      }}
+                      autoFocus
                     />
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            {/* Hidden inputs for UI state */}
-            <input type='hidden' name='coverArt' value={coverArtUrl ?? ''} />
-            <input type='hidden' name='rpm' value={rpm ?? ''} />
-            <input type='hidden' name='format' value={format ?? ''} />
-            <input
-              type='hidden'
-              name='mediaCondition'
-              value={mediaCondition ?? ''}
-            />
-            <input
-              type='hidden'
-              name='sleeveCondition'
-              value={sleeveCondition ?? ''}
-            />
-            <input
-              type='hidden'
-              name='purchaseDate'
-              value={purchaseDate ? formatDate(purchaseDate, 'yyyy-MM-dd') : ''}
-            />
-            <input
-              type='hidden'
-              name='isFavorite'
-              value={copy.isFavorite ? 'true' : 'false'}
-            />
-
-            {/* Acquisition */}
-            <div className='rounded-md border p-4'>
-              <div className='mb-3 text-sm font-medium'>Acquisition</div>
-
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-                <Dialog
-                  open={purchaseDateOpen}
-                  onOpenChange={setPurchaseDateOpen}
-                >
-                  <DialogTrigger asChild>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      className={cn(
-                        'w-full justify-start text-left font-normal',
-                        !purchaseDate && 'text-muted-foreground',
-                      )}
-                    >
-                      <CalendarIcon className='mr-2 h-4 w-4' />
-                      {purchaseDate
-                        ? formatDate(purchaseDate, 'PPP')
-                        : 'Purchase date'}
-                    </Button>
-                  </DialogTrigger>
-
-                  <DialogContent className='w-auto p-0'>
-                    <DialogHeader className='p-4 pb-0'>
-                      <DialogTitle>Purchase date</DialogTitle>
-                    </DialogHeader>
-
-                    <div className='p-4 pt-2'>
-                      <Calendar
-                        mode='single'
-                        selected={purchaseDate ?? undefined}
-                        onSelect={(date) => {
-                          setPurchaseDate(date ?? null)
-                          if (date) setPurchaseDateOpen(false)
+                    <div className='mt-2'>
+                      <Button
+                        type='button'
+                        variant='ghost'
+                        className='w-full'
+                        onClick={() => {
+                          setPurchaseDate(null)
+                          setPurchaseDateOpen(false)
                         }}
-                        autoFocus
-                      />
-
-                      <div className='mt-2'>
-                        <Button
-                          type='button'
-                          variant='ghost'
-                          className='w-full'
-                          onClick={() => {
-                            setPurchaseDate(null)
-                            setPurchaseDateOpen(false)
-                          }}
-                        >
-                          Clear
-                        </Button>
-                      </div>
+                      >
+                        Clear
+                      </Button>
                     </div>
-                  </DialogContent>
-                </Dialog>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
-                <Input
-                  id='purchasePriceCents'
-                  name='purchasePriceCents'
-                  defaultValue={copy.purchasePriceCents ?? undefined}
-                  placeholder='Purchase price'
-                />
+              <Input
+                id='purchasePriceCents'
+                name='purchasePriceCents'
+                defaultValue={copy.purchasePriceCents ?? undefined}
+                placeholder='Purchase price'
+              />
 
-                <Input
-                  id='storageLocation'
-                  name='storageLocation'
-                  defaultValue={copy.storageLocation ?? undefined}
-                  placeholder='Storage location'
-                />
-              </div>
-            </div>
-
-            {/* Details */}
-            <div className='rounded-md border p-4'>
-              <div className='mb-3 text-sm font-medium'>Details</div>
-
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      className={cn(
-                        'w-full',
-                        rpm ? '' : 'text-muted-foreground',
-                      )}
-                    >
-                      {rpmLabel}
-                    </Button>
-                  </DropdownMenuTrigger>
-
-                  <DropdownMenuContent align='start'>
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem onSelect={() => setRpm('RPM_33')}>
-                        33
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={() => setRpm('RPM_45')}>
-                        45
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={() => setRpm('RPM_78')}>
-                        78
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={() => setRpm(null)}>
-                        Clear
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      className={cn(
-                        'w-full',
-                        format ? '' : 'text-muted-foreground',
-                      )}
-                    >
-                      {formatLabel}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align='start'>
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem onSelect={() => setFormat('LP')}>
-                        LP
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={() => setFormat('EP')}>
-                        EP
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={() => setFormat('SINGLE')}>
-                        Single
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={() => setFormat('BOX_SET')}>
-                        Box set
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={() => setFormat(null)}>
-                        Clear
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      className={cn(
-                        'w-full',
-                        mediaCondition ? '' : 'text-muted-foreground',
-                      )}
-                    >
-                      {mediaConditionLabel}
-                    </Button>
-                  </DropdownMenuTrigger>
-
-                  <DropdownMenuContent align='start'>
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem
-                        onSelect={() => setMediaCondition('MINT')}
-                      >
-                        Mint
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setMediaCondition('NEAR_MINT')}
-                      >
-                        Near mint
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setMediaCondition('VERY_GOOD_PLUS')}
-                      >
-                        Very good plus
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setMediaCondition('VERY_GOOD')}
-                      >
-                        Very good
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setMediaCondition('GOOD_PLUS')}
-                      >
-                        Good plus
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setMediaCondition('GOOD')}
-                      >
-                        Good
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setMediaCondition('FAIR')}
-                      >
-                        Fair
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setMediaCondition('POOR')}
-                      >
-                        Poor
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setMediaCondition(null)}
-                      >
-                        Clear
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      className={cn(
-                        'w-full',
-                        sleeveCondition ? '' : 'text-muted-foreground',
-                      )}
-                    >
-                      {sleeveConditionLabel}
-                    </Button>
-                  </DropdownMenuTrigger>
-
-                  <DropdownMenuContent align='start'>
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem
-                        onSelect={() => setSleeveCondition('MINT')}
-                      >
-                        Mint
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setSleeveCondition('NEAR_MINT')}
-                      >
-                        Near mint
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setSleeveCondition('VERY_GOOD_PLUS')}
-                      >
-                        Very good plus
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setSleeveCondition('VERY_GOOD')}
-                      >
-                        Very good
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setSleeveCondition('GOOD_PLUS')}
-                      >
-                        Good plus
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setSleeveCondition('GOOD')}
-                      >
-                        Good
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setSleeveCondition('FAIR')}
-                      >
-                        Fair
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setSleeveCondition('POOR')}
-                      >
-                        Poor
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => setSleeveCondition(null)}
-                      >
-                        Clear
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className='space-y-2'>
-              <Textarea
-                id='notes'
-                name='notes'
-                defaultValue={copy.notes ?? undefined}
-                placeholder='Notes...'
+              <Input
+                id='storageLocation'
+                name='storageLocation'
+                defaultValue={copy.storageLocation ?? undefined}
+                placeholder='Storage location'
               />
             </div>
+          </div>
 
-            {state && state.ok === false && (
-              <div className='rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive'>
-                {state.error}
-              </div>
-            )}
+          {/* Details */}
+          <div className='rounded-md border p-4'>
+            <div className='mb-3 text-sm font-medium'>Details</div>
 
-            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-              <SubmitButton disabled={uploadingCover} />
-              {uploadingCover ? (
-                <span className='text-xs text-muted-foreground'>
-                  Cover uploading…
-                </span>
-              ) : null}
-              <Link href={`/collection/${copy.id}`}>
-                <Button
-                  className='hover:cursor-pointer hover:text-foreground/50 w-full'
-                  variant='outline'
-                >
-                  Back to details
-                </Button>
-              </Link>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    className={cn('w-full', !rpm && 'text-muted-foreground')}
+                  >
+                    {rpmLabel}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='start'>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onSelect={() => setRpm('RPM_33')}>
+                      33
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setRpm('RPM_45')}>
+                      45
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setRpm('RPM_78')}>
+                      78
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setRpm(null)}>
+                      Clear
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    className={cn(
+                      'w-full',
+                      !mediaCondition && 'text-muted-foreground',
+                    )}
+                  >
+                    {mediaConditionLabel}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='start'>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      onSelect={() => setMediaCondition('MINT')}
+                    >
+                      Mint
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setMediaCondition('NEAR_MINT')}
+                    >
+                      Near mint
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setMediaCondition('VERY_GOOD_PLUS')}
+                    >
+                      Very good plus
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setMediaCondition('VERY_GOOD')}
+                    >
+                      Very good
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setMediaCondition('GOOD_PLUS')}
+                    >
+                      Good plus
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setMediaCondition('GOOD')}
+                    >
+                      Good
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setMediaCondition('FAIR')}
+                    >
+                      Fair
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setMediaCondition('POOR')}
+                    >
+                      Poor
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setMediaCondition(null)}>
+                      Clear
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    className={cn(
+                      'w-full',
+                      !sleeveCondition && 'text-muted-foreground',
+                    )}
+                  >
+                    {sleeveConditionLabel}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='start'>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      onSelect={() => setSleeveCondition('MINT')}
+                    >
+                      Mint
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setSleeveCondition('NEAR_MINT')}
+                    >
+                      Near mint
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setSleeveCondition('VERY_GOOD_PLUS')}
+                    >
+                      Very good plus
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setSleeveCondition('VERY_GOOD')}
+                    >
+                      Very good
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setSleeveCondition('GOOD_PLUS')}
+                    >
+                      Good plus
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setSleeveCondition('GOOD')}
+                    >
+                      Good
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setSleeveCondition('FAIR')}
+                    >
+                      Fair
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setSleeveCondition('POOR')}
+                    >
+                      Poor
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setSleeveCondition(null)}>
+                      Clear
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
+          </div>
+
+          {/* Notes */}
+          <Textarea
+            id='notes'
+            name='notes'
+            defaultValue={copy.notes ?? undefined}
+            placeholder='Notes...'
+          />
+
+          {state?.ok === false && (
+            <div className='rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive'>
+              {state.error}
+            </div>
+          )}
+
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+            <SubmitButton />
+            <Link href={`/collection/${copy.id}`}>
+              <Button
+                className='hover:cursor-pointer hover:text-foreground/50 w-full'
+                variant='outline'
+              >
+                Back to details
+              </Button>
+            </Link>
           </div>
         </form>
       </CardContent>
