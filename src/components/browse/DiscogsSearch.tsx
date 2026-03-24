@@ -49,6 +49,7 @@ export function DiscogsSearch() {
 
   function handleSelect(result: DiscogsResult) {
     const params = new URLSearchParams({
+      discogsId: result.discogsId.toString(),
       artist: result.artist,
       title: result.title,
       year: result.year?.toString() ?? '',

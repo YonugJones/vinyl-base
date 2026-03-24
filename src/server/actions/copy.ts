@@ -25,48 +25,52 @@ export async function createCopy(
     const session = await requireSession()
     const user = session.user
 
-    // --- Release fields ---
+    // --- Release fields (from Discogs) ---
     const artist = mustString(formData.get('artist'), 'artist')
     const title = mustString(formData.get('title'), 'title')
     const year = optionalInt(formData.get('year'))
     const label = optionalString(formData.get('label'))
     const coverArt = optionalString(formData.get('coverArt'))
     const format = optionalEnum(formData.get('format'), Object.values(Format))
-    const rpm = optionalEnum(formData.get('rpm'), Object.values(Rpm))
+    const discogsId = optionalInt(formData.get('discogsId'))
     const normalizedKey = makeNormalizedKey(artist, title, year)
 
-    // --- Dedupe Release using normalizedKey ---
-    const release = await prisma.release.upsert({
-      where: { normalizedKey },
-      create: {
-        artist,
-        title,
-        year,
-        label,
-        coverArt,
-        format,
-        rpm,
-        normalizedKey,
-      },
-      update: {
-        artist,
-        title,
-        year,
-        label,
-        coverArt,
-        format,
-        rpm,
-      },
-      select: { id: true },
-    })
+    // find existing release by discogsId first, normalizedKey fallback
+    let release = discogsId
+      ? await prisma.release.findUnique({
+          where: { discogsId },
+          select: { id: true },
+        })
+      : await prisma.release.findUnique({
+          where: { normalizedKey },
+          select: { id: true },
+        })
 
-    // --- Copy fields ---
+    // Create release if it doesn't exist
+    if (!release) {
+      release = await prisma.release.create({
+        data: {
+          artist,
+          title,
+          year,
+          label,
+          coverArt,
+          format,
+          discogsId,
+          normalizedKey,
+        },
+        select: { id: true },
+      })
+    }
+
+    // --- Copy fields (user's specific copy) ---
     const purchaseDate = optionalDate(formData.get('purchaseDate'))
     const purchasePriceCents = optionalInt(formData.get('purchasePriceCents'))
     if (purchasePriceCents != null && purchasePriceCents < 0) {
       return { ok: false, error: 'Purchase price cannot be negative' }
     }
 
+    const rpm = optionalEnum(formData.get('rpm'), Object.values(Rpm))
     const mediaCondition = optionalEnum(
       formData.get('mediaCondition'),
       Object.values(Condition),
@@ -86,6 +90,7 @@ export async function createCopy(
         releaseId: release.id,
         purchaseDate,
         purchasePriceCents,
+        rpm,
         mediaCondition,
         sleeveCondition,
         notes,
@@ -116,47 +121,14 @@ export async function editCopy(
     })
     if (!copy) return { ok: false, error: 'Copy not found.' }
 
-    // --- Release fields ---
-    const artist = mustString(formData.get('artist'), 'artist')
-    const title = mustString(formData.get('title'), 'title')
-    const year = optionalInt(formData.get('year'))
-    const label = optionalString(formData.get('label'))
-    const coverArt = optionalString(formData.get('coverArt'))
-    const format = optionalEnum(formData.get('format'), Object.values(Format))
-    const rpm = optionalEnum(formData.get('rpm'), Object.values(Rpm))
-    const normalizedKey = makeNormalizedKey(artist, title, year)
-
-    // --- Dedupe Release using normalizedKey ---
-    const release = await prisma.release.upsert({
-      where: { normalizedKey },
-      create: {
-        artist,
-        title,
-        year,
-        label,
-        coverArt,
-        format,
-        rpm,
-        normalizedKey,
-      },
-      update: {
-        artist,
-        title,
-        year,
-        label,
-        coverArt,
-        format,
-        rpm,
-      },
-    })
-
-    // --- Copy fields ---
+    // --- Copy fields only ---
     const purchaseDate = optionalDate(formData.get('purchaseDate'))
     const purchasePriceCents = optionalInt(formData.get('purchasePriceCents'))
     if (purchasePriceCents !== null && purchasePriceCents < 0) {
       return { ok: false, error: 'Purchase price cannot be negative' }
     }
 
+    const rpm = optionalEnum(formData.get('rpm'), Object.values(Rpm))
     const mediaCondition = optionalEnum(
       formData.get('mediaCondition'),
       Object.values(Condition),
@@ -175,9 +147,9 @@ export async function editCopy(
     await prisma.copy.update({
       where: { id: copyId, userId: user.id },
       data: {
-        releaseId: release.id,
         purchaseDate,
         purchasePriceCents,
+        rpm,
         mediaCondition,
         sleeveCondition,
         notes,

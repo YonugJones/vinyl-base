@@ -1,6 +1,7 @@
 import { CreateCopyForm } from '@/components/collection/CreateCopyForm'
 
 type SearchParams = {
+  discogsId?: string
   artist?: string
   title?: string
   year?: string
