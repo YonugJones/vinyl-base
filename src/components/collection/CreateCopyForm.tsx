@@ -1,8 +1,6 @@
 'use client'
 
 import { useActionState, useEffect, useMemo, useState } from 'react'
-// removed useRef
-
 import { useFormStatus } from 'react-dom'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,7 +9,6 @@ import { createCopy } from '@/server/actions/copy'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-// import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -30,8 +27,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Calendar } from '@/components/ui/calendar'
 import { cn } from '@/lib/utils'
 import { Rpm, Condition } from '@/generated/prisma'
-// removed Format
-
 import { CalendarIcon } from 'lucide-react'
 
 type ActionState = { ok: true } | { ok: false; error: string }
