@@ -67,8 +67,8 @@ export function CopyDetails({ copy }: CopyDetailsProps) {
               <div className='text-muted-foreground'>Format</div>
               <div className='text-foreground'>
                 {copy.release.format ? formatEnum(copy.release.format) : '—'}
-                {copy.release.rpm
-                  ? `, ${formatEnum(copy.release.rpm).replace('RPM ', '')} RPM`
+                {copy.rpm
+                  ? `, ${formatEnum(copy.rpm).replace('RPM ', '')} RPM`
                   : ''}
               </div>
 
