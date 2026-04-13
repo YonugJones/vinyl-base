@@ -41,7 +41,7 @@ export default function SignUpPage() {
         return
       }
 
-      router.push('/dashboard')
+      router.push('/collection')
       router.refresh()
     } catch {
       setError('Something went wrong.')
